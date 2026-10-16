@@ -1,8 +1,15 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <meta
+        name="description"
+        content="Terima kasih telah mengirim pesan melalui Tell Kela Anonymously."
+    >
+
     <title>Thank You — Tell Kela Anonymously</title>
 
     <style>
@@ -10,18 +17,25 @@
             box-sizing: border-box;
         }
 
+        html,
         body {
             margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: #000;
+        }
+
+        body {
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #261b32;
+            min-height: 100dvh;
         }
 
         .page {
             position: relative;
-            width: min(100vw, 420px);
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
             line-height: 0;
         }
 
@@ -37,23 +51,56 @@
             top: 72%;
             width: 34%;
             height: 7%;
+
+            margin: 0;
+            padding: 0;
             border: none;
+            border-radius: 0;
             background: transparent;
+
             cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-button:focus-visible {
+            outline: 2px dashed #555;
+            outline-offset: 3px;
+        }
+
+        @media (min-width: 700px) {
+            .page {
+                width: min(100%, 900px);
+            }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            .back-button {
+                transition: background-color 0.2s ease;
+            }
+
+            .back-button:hover {
+                background: rgb(255 255 255 / 5%);
+            }
         }
     </style>
 </head>
-<body>
 
+<body>
     <main class="page">
-        <img src="assets/last.png" alt="Thank you for your message">
+        <img
+            src="assets/last.png"
+            alt="Thank you for your message"
+            fetchpriority="high"
+        >
 
         <button
+            type="button"
             class="back-button"
-            aria-label="Back to home"
-            onclick="window.location.href='index.html'">
-        </button>
+            aria-label="Kembali ke beranda"
+            onclick="window.location.href='index.html'"
+        ></button>
     </main>
-
 </body>
 </html>
+```
