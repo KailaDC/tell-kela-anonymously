@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tell Kela Anonymously</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #261b32;
+        }
+
+        .page {
+            position: relative;
+            width: min(100vw, 420px);
+            line-height: 0;
+        }
+
+        .page img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        textarea {
+            position: absolute;
+            left: 20%;
+            top: 24%;
+            width: 64%;
+            height: 52%;
+            padding: 12px;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow-y: auto;
+            overflow-wrap: anywhere;
+            background: transparent;
+            color: #333;
+            font: 14px Arial, sans-serif;
+            line-height: 1.5;
+        }
+
+        .send-button {
+            position: absolute;
+            left: 32%;
+            top: 78%;
+            width: 36%;
+            height: 8%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .word-count {
+            position: absolute;
+            right: 20%;
+            top: 75%;
+            font: 11px Arial, sans-serif;
+            color: #555;
+            pointer-events: none;
+        }
+
+        .send-button:disabled {
+            cursor: wait;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <img src="assets/isi.png" alt="Form confession">
+
+        <textarea
+            id="message"
+            placeholder="Ketik pesanmu..."
+            aria-label="Pesan anonim"
+            maxlength="5000"
+            required></textarea>
+
+        <div class="word-count">
+            <span id="count">0</span>/500 kata
+        </div>
+
+        <button
+            type="button"
+            id="sendButton"
+            class="send-button"
+            aria-label="Send">
+        </button>
+    </main>
+
+    <script type="module">
+        import {
+            collection,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+        import { db } from "./js/firebase-config.js";
+
+        const message = document.getElementById("message");
+        const count = document.getElementById("count");
+        const sendButton = document.getElementById("sendButton");
+
+        message.addEventListener("input", () => {
+            const text = message.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+
+            count.textContent = words;
+            count.style.color = words > 500 ? "red" : "#555";
+        });
+
+        sendButton.addEventListener("click", async () => {
+            const text = message.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+
+            if (!text) {
+                alert("Pesannya belum diisi, ya!");
+                return;
+            }
+
+            if (words > 500) {
+                alert("Maksimal 500 kata, ya!");
+                return;
+            }
+
+            sendButton.disabled = true;
+
+            try {
+                await addDoc(collection(db, "confessions"), {
+                    message: text,
+                    createdAt: serverTimestamp()
+                });
+
+                window.location.href = "success.html";
+            } catch (error) {
+                console.error("Gagal menyimpan pesan:", error);
+                alert("Pesan belum berhasil dikirim. Periksa koneksi internet dan pengaturan Firebase, lalu coba lagi.");
+                sendButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

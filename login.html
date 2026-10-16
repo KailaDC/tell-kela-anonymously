@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Archive — Tell Kela Anonymously</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: #171311;
+            color: #e8d6ad;
+            font-family: Georgia, serif;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            padding: 35px 28px;
+            border: 1px solid #8c7041;
+            background: #241d19;
+            text-align: center;
+            box-shadow: 0 12px 35px #0008;
+        }
+
+        .symbol {
+            font-size: 38px;
+            color: #c7a45e;
+        }
+
+        h1 {
+            margin: 12px 0;
+            font-size: 26px;
+            letter-spacing: 2px;
+        }
+
+        p {
+            color: #b9aa91;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            margin-top: 16px;
+            padding: 13px;
+            border: 1px solid #75603f;
+            background: #171311;
+            color: #f5e9d0;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 13px;
+            border: 1px solid #c7a45e;
+            background: #c7a45e;
+            color: #171311;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        #status {
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-card">
+        <div class="symbol">✦</div>
+        <h1>THE SECRET ARCHIVE</h1>
+        <p>
+            A private place for your anonymous letters.
+            Sign in to continue.
+        </p>
+
+        <form id="loginForm">
+            <input
+                id="email"
+                type="email"
+                placeholder="Your email"
+                autocomplete="username"
+                required>
+
+            <input
+                id="password"
+                type="password"
+                placeholder="Your password"
+                autocomplete="current-password"
+                required>
+
+            <button id="loginButton" type="submit">
+                OPEN MY ARCHIVE
+            </button>
+        </form>
+
+        <p id="status" role="status"></p>
+    </main>
+
+    <script type="module">
+        import { auth } from "./js/firebase-config.js";
+        import {
+            signInWithEmailAndPassword,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+        const ADMIN_UID = "2zwgyC1WJTfvC7BMsesV6F8AvcQ2";
+        const form = document.getElementById("loginForm");
+        const status = document.getElementById("status");
+        const button = document.getElementById("loginButton");
+
+        onAuthStateChanged(auth, user => {
+            if (user && user.uid === ADMIN_UID) {
+                window.location.replace("storage.html");
+            }
+        });
+
+        form.addEventListener("submit", async event => {
+            event.preventDefault();
+
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+
+            button.disabled = true;
+            status.textContent = "Opening your archive...";
+
+            try {
+                const result = await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+                if (result.user.uid !== ADMIN_UID) {
+                    await auth.signOut();
+                    status.textContent =
+                        "This account is not authorized to open this archive.";
+                    button.disabled = false;
+                    return;
+                }
+
+                window.location.replace("storage.html");
+            } catch (error) {
+                console.error("Login error:", error.code);
+
+                status.textContent =
+                    "Login failed. Check your email and password.";
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

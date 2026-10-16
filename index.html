@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tell Kela Anonymously</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #261b32;
+        }
+
+        .page {
+            position: relative;
+            width: min(100vw, 420px);
+            line-height: 0;
+        }
+
+        .page img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .start-button {
+            position: absolute;
+            left: 19.5%;
+            top: 71.3%;
+            width: 34%;
+            height: 7.1%;
+            cursor: pointer;
+            border: 0;
+            background: transparent;
+        }
+
+        .start-button:focus-visible {
+            outline: 3px solid #7046a5;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="page">
+        <img src="assets/beranda.png" alt="Tell Kela Anonymously">
+
+        <button
+            class="start-button"
+            aria-label="Start"
+            onclick="window.location.href='confess.html'">
+        </button>
+    </main>
+
+</body>
+</html>

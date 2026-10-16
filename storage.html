@@ -1,0 +1,676 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#171513">
+    <meta name="description" content="A private archive for anonymous letters.">
+
+    <title>The Secret Archive | Kela</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IM+Fell+English&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #171513;
+            --panel: #25201c;
+            --gold: #d4af65;
+            --gold-light: #f2d797;
+            --cream: #f0e6d5;
+            --muted: #b9a98f;
+            --danger: #e4a49a;
+            --border: #806644;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at top, #34271d 0%, var(--bg) 58%);
+            color: var(--cream);
+            font-family: "Cormorant Garamond", Georgia, serif;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        button, input, select {
+            font: inherit;
+        }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid var(--gold-light);
+            outline-offset: 4px;
+        }
+
+        .archive {
+            width: min(100%, 960px);
+            margin: auto;
+            padding: 42px 24px 30px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .header-symbol {
+            color: var(--gold);
+            font-size: 27px;
+            margin-bottom: 12px;
+        }
+
+        .eyebrow {
+            color: var(--gold);
+            letter-spacing: 4px;
+            font-size: 11px;
+        }
+
+        h1 {
+            margin: 15px 0 8px;
+            font-family: "IM Fell English", Georgia, serif;
+            font-size: clamp(30px, 6vw, 49px);
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 17px;
+            font-style: italic;
+        }
+
+        .ornament {
+            margin-top: 18px;
+            color: var(--gold);
+            letter-spacing: 5px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 18px;
+            margin-bottom: 23px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background: #211c18;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px #d4af6515;
+        }
+
+        .search-icon {
+            color: var(--gold);
+            font-size: 22px;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--cream);
+            font-size: 17px;
+        }
+
+        .search-box input::placeholder {
+            color: var(--muted);
+        }
+
+        .clear-search {
+            display: none;
+            border: 0;
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .clear-search.visible {
+            display: block;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 26px;
+        }
+
+        #total {
+            color: var(--gold-light);
+            font-size: 15px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        select {
+            max-width: 100%;
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: var(--panel);
+            color: var(--cream);
+            cursor: pointer;
+        }
+
+        .logout-button {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: transparent;
+            color: var(--gold);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background .2s, border-color .2s;
+        }
+
+        .logout-button:hover {
+            background: #d4af6515;
+            border-color: var(--gold);
+        }
+
+        .envelope-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 30px 20px;
+        }
+
+        .letter {
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .envelope {
+            position: relative;
+            display: grid;
+            place-items: center;
+            aspect-ratio: 1.25;
+            overflow: hidden;
+            border: 1px solid #98764a;
+            background: linear-gradient(145deg, #332a22, #171513 75%);
+            box-shadow: 0 8px 18px #0008;
+            transition: transform .25s, border-color .25s, box-shadow .25s;
+        }
+
+        .envelope::before,
+        .envelope::after {
+            content: "";
+            position: absolute;
+            top: -42%;
+            width: 72%;
+            height: 72%;
+            border: 1px solid #98764a;
+            transform: rotate(45deg);
+            pointer-events: none;
+        }
+
+        .envelope::after {
+            top: auto;
+            bottom: -42%;
+        }
+
+        .letter:hover .envelope,
+        .letter:focus-visible .envelope {
+            transform: translateY(-5px);
+            border-color: var(--gold-light);
+            box-shadow: 0 13px 27px #000a, 0 0 15px #d4af6515;
+        }
+
+        .seal {
+            z-index: 1;
+            display: grid;
+            place-items: center;
+            width: 43px;
+            height: 43px;
+            border: 2px solid #6e4a26;
+            border-radius: 50%;
+            background: radial-gradient(circle, #f2d797, #a97735);
+            color: #2a1d10;
+            box-shadow: 0 0 0 3px #211912;
+            font-size: 20px;
+            transition: transform .25s;
+        }
+
+        .letter:hover .seal {
+            transform: rotate(15deg) scale(1.06);
+        }
+
+        .new-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 2;
+            padding: 4px 7px;
+            border-radius: 3px;
+            background: var(--gold);
+            color: #211912;
+            font: 10px Arial, sans-serif;
+            letter-spacing: 1px;
+        }
+
+        .letter-date {
+            display: block;
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .empty {
+            grid-column: 1 / -1;
+            padding: 45px 12px;
+            border: 1px dashed #6e583a;
+            color: var(--muted);
+            text-align: center;
+            font-size: 17px;
+            line-height: 1.7;
+        }
+
+        .empty-symbol {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--gold);
+            font-size: 28px;
+        }
+
+        footer {
+            margin-top: 55px;
+            padding-top: 22px;
+            border-top: 1px solid #5a4630;
+            color: var(--muted);
+            text-align: center;
+            font-size: 16px;
+            font-style: italic;
+            line-height: 1.7;
+        }
+
+        .footer-symbol {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        /* Letter reading panel */
+
+        .modal[hidden] {
+            display: none !important;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: #080605d6;
+            backdrop-filter: blur(6px);
+            animation: fadeIn .2s ease;
+        }
+
+        .letter-paper {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 540px);
+            max-height: 88vh;
+            overflow-y: auto;
+            padding: 42px 34px 30px;
+            border: 1px solid #b89557;
+            outline: 1px solid var(--border);
+            outline-offset: -7px;
+            background: radial-gradient(ellipse at top, #3b2e22, #211a16 76%);
+            color: var(--cream);
+            box-shadow: 0 25px 80px #000b;
+            animation: letterAppear .28s ease-out;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            border: 0;
+            background: transparent;
+            color: var(--gold);
+            font: 30px Georgia, serif;
+            cursor: pointer;
+        }
+
+        .paper-symbol {
+            color: var(--gold);
+            text-align: center;
+            font-size: 30px;
+        }
+
+        .paper-eyebrow {
+            color: var(--gold);
+            text-align: center;
+            letter-spacing: 3px;
+            font-size: 10px;
+        }
+
+        .letter-paper h2 {
+            margin: 12px 0 8px;
+            font: 30px "IM Fell English", Georgia, serif;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        .paper-date {
+            color: var(--muted);
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .paper-divider {
+            margin: 24px 0;
+            color: var(--gold);
+            text-align: center;
+        }
+
+        .letter-content {
+            min-height: 90px;
+            margin: 0;
+            color: var(--cream);
+            font-size: 19px;
+            line-height: 1.85;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .paper-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #5a4630;
+        }
+
+        .paper-actions button {
+            padding: 10px 16px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .delete-button {
+            border: 1px solid #a65f52;
+            background: transparent;
+            color: var(--danger);
+        }
+
+        .delete-button:hover {
+            background: #a65f5220;
+        }
+
+        .close-button {
+            border: 1px solid var(--gold);
+            background: var(--gold);
+            color: #211912;
+        }
+
+        .close-button:hover {
+            background: var(--gold-light);
+        }
+
+        button:disabled {
+            opacity: .55;
+            cursor: wait;
+        }
+
+        .toast {
+            position: fixed;
+            z-index: 1200;
+            bottom: 24px;
+            left: 50%;
+            width: max-content;
+            max-width: calc(100% - 32px);
+            transform: translateX(-50%);
+            padding: 12px 18px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--cream);
+            box-shadow: 0 8px 25px #0008;
+            font-size: 15px;
+        }
+
+        .toast[hidden] {
+            display: none !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes letterAppear {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @media (max-width: 650px) {
+            .archive {
+                padding: 34px 18px 28px;
+            }
+
+            .envelope-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 25px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .toolbar-actions {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+
+            .letter-paper {
+                padding: 38px 26px 25px;
+            }
+
+            .letter-paper h2 {
+                font-size: 25px;
+            }
+
+            .paper-actions {
+                flex-direction: column;
+            }
+
+            .paper-actions button {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="archive">
+        <header>
+            <div class="header-symbol" aria-hidden="true">✦</div>
+            <div class="eyebrow">TELL KELA ANONYMOUSLY</div>
+            <h1>THE SECRET ARCHIVE</h1>
+            <div class="subtitle">unopened words, hidden stories</div>
+            <div class="ornament" aria-hidden="true">— ✧ —</div>
+        </header>
+
+        <label class="search-box">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input
+                id="search"
+                type="search"
+                placeholder="Find an envelope..."
+                aria-label="Search messages">
+
+            <button
+                type="button"
+                id="clearSearch"
+                class="clear-search"
+                aria-label="Clear search">×</button>
+        </label>
+
+        <div class="toolbar">
+            <span id="total" aria-live="polite">Loading letters...</span>
+
+            <div class="toolbar-actions">
+                <select id="sort" aria-label="Sort messages">
+                    <option value="newest">Newest first</option>
+                    <option value="oldest">Oldest first</option>
+                    <option value="unread">Unread first</option>
+                </select>
+
+                <button
+                    type="button"
+                    id="logoutButton"
+                    class="logout-button">
+                    Log out ↗
+                </button>
+            </div>
+        </div>
+
+        <section
+            id="envelopeGrid"
+            class="envelope-grid"
+            aria-label="Anonymous messages"
+            aria-live="polite">
+            <p class="empty">
+                <span class="empty-symbol">✧</span>
+                Your archive is waiting for its letters...
+            </p>
+        </section>
+
+        <footer>
+            <span class="footer-symbol" aria-hidden="true">✦</span>
+            Different people, different stories,<br>
+            all kept here safely.
+        </footer>
+    </main>
+
+    <!-- Letter modal -->
+    <div id="letterModal" class="modal" hidden>
+        <div class="modal-backdrop" id="modalBackdrop"></div>
+
+        <section
+            class="letter-paper"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="letterTitle">
+
+            <button
+                type="button"
+                id="closeModal"
+                class="close-modal"
+                aria-label="Close letter">×</button>
+
+            <div class="paper-symbol" aria-hidden="true">✦</div>
+            <p class="paper-eyebrow">A PRIVATE LETTER</p>
+            <h2 id="letterTitle">A message for Kela</h2>
+            <p id="letterDate" class="paper-date"></p>
+
+            <div class="paper-divider" aria-hidden="true">
+                ❧ ───── ✦ ───── ❧
+            </div>
+
+            <p id="letterContent" class="letter-content"></p>
+
+            <div class="paper-actions">
+                <button
+                    type="button"
+                    id="deleteMessage"
+                    class="delete-button">
+                    Delete letter
+                </button>
+
+                <button
+                    type="button"
+                    id="closeLetter"
+                    class="close-button">
+                    Close letter
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script>
+        const searchInput = document.getElementById("search");
+        const clearSearchButton = document.getElementById("clearSearch");
+
+        function updateClearButton() {
+            clearSearchButton.classList.toggle(
+                "visible",
+                searchInput.value.length > 0
+            );
+        }
+
+        searchInput.addEventListener("input", updateClearButton);
+
+        clearSearchButton.addEventListener("click", () => {
+            searchInput.value = "";
+            searchInput.dispatchEvent(new Event("input"));
+            searchInput.focus();
+        });
+    </script>
+
+    <script type="module" src="js/storage.js"></script>
+</body>
+</html>
